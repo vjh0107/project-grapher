@@ -116,8 +116,14 @@ internal class ProjectGraphGenerationService(
     }
 
     private fun getEnabledProjects(): Collection<Project> {
-        return rootProject.subprojects.filter { project ->
-            project.extensions.findByType(ProjectGrapherSubProjectExtension::class.java)?.isEnabled == true
-        }
+        return rootProject.subprojects
+            .filterNot { project ->
+                rootProject.subprojects.minus(project).any { otherProject ->
+                    otherProject.path.startsWith(project.path)
+                }
+            }
+            .filter { project ->
+                project.extensions.findByType(ProjectGrapherSubProjectExtension::class.java)?.isEnabled == true
+            }
     }
 }
